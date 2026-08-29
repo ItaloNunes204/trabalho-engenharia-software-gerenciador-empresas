@@ -13,11 +13,11 @@ O sistema tem como objetivo permitir o gerenciamento de empresas, oferecendo fun
 
 ## 2. Participantes do Grupo
 
-| Membro    | Matrícula | Turma | Papel |
-| --------- | --------- | ----- | ----- |
-| Membro 01 | 000000    | XX    | Papel |
-| Membro 02 | 000000    | XX    | Papel |
-| Membro 03 | 000000    | XX    | Papel |
+| Membro                           | Matrícula | Turma | Papel      |
+| -------------------------------- | --------- | ----- | ---------- |
+| Evandro Araujo Furlaneto Delgado | 000000    | TN    | Full Stack |
+| Italo Nunes Pereira Vieira       | 000000    | TN    | Full Stack |
+| Leticia Vitoria Martins do Carmo | 000000    | TN    | Full Stack |
 
 ## 3. Tecnologias Usadas
 
@@ -32,3 +32,4 @@ O sistema tem como objetivo permitir o gerenciamento de empresas, oferecendo fun
 - **ChatGPT**
 - **Claude**
 - **Gemini**
+- **GitHub Copilot**
