@@ -1,0 +1,54 @@
+import { screen, within } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import { goTo, mainNav, renderApp } from "../test/renderApp";
+import { NAV_ITEMS } from "./navigation";
+
+describe("navigation shell", () => {
+    it.each(NAV_ITEMS)("NAV-T01: direct load of $path activates $label", ({ path, label }) => {
+        renderApp(path);
+        const current = within(mainNav())
+            .getAllByRole("link")
+            .filter((link) => link.getAttribute("aria-current") === "page");
+        expect(current).toHaveLength(1);
+        expect(current[0]).toHaveAccessibleName(label);
+        const breadcrumb = screen.getByRole("navigation", { name: "Trilha de navegação" });
+        const crumbs = within(breadcrumb).getAllByRole("listitem");
+        expect(crumbs.map((crumb) => crumb.textContent)).toEqual(["Painel administrativo", label]);
+        expect(crumbs[1]).toHaveAttribute("aria-current", "page");
+        expect(screen.getByRole("heading", { level: 1, name: label })).toBeInTheDocument();
+        expect(screen.getByRole("main")).toBeInTheDocument();
+    });
+
+    it("NAV-002 / NAV-004: menu navigation updates active state and focuses the heading", async () => {
+        const { user } = renderApp("/empresas");
+        await goTo(user, "Usuários");
+        const heading = screen.getByRole("heading", { level: 1, name: "Usuários" });
+        expect(heading).toHaveFocus();
+        expect(within(mainNav()).getByRole("link", { name: "Usuários" })).toHaveAttribute("aria-current", "page");
+        expect(within(mainNav()).getByRole("link", { name: "Empresas" })).not.toHaveAttribute("aria-current");
+    });
+
+    it("NAV-T03: mobile menu toggle stays in sync with aria-expanded", async () => {
+        const { user } = renderApp("/");
+        const button = screen.getByRole("button", { name: "Abrir menu" });
+        expect(button).toHaveAttribute("aria-expanded", "false");
+
+        await user.click(button);
+        expect(button).toHaveAttribute("aria-expanded", "true");
+
+        await user.keyboard("{Escape}");
+        expect(button).toHaveAttribute("aria-expanded", "false");
+        expect(button).toHaveFocus();
+
+        await user.click(button);
+        await goTo(user, "Permissões");
+        expect(button).toHaveAttribute("aria-expanded", "false");
+    });
+
+    it("NAV-005: shell shows the demonstration context", () => {
+        renderApp("/");
+        expect(screen.getByText("Acme Gestão")).toBeInTheDocument();
+        expect(screen.getByText("João Sampaio")).toBeInTheDocument();
+        expect(screen.getByText(/Todos os dados são fictícios/)).toBeInTheDocument();
+    });
+});
