@@ -1,10 +1,14 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev")
     SQLALCHEMY_DATABASE_URI = os.environ.get(
-        "DATABASE_URL", "postgresql://postgres:postgres@localhost:5432/gerenciador_empresas"
+        "DATABASE_URL",
+        "postgresql+psycopg://postgres:postgres@localhost:5433/gerenciador_empresas",
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     CORS_ORIGINS = os.environ.get("CORS_ORIGINS", "http://localhost:5173")
