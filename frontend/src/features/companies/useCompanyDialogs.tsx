@@ -15,12 +15,9 @@ type DialogState =
     | { kind: "confirmDelete"; companyId: string }
     | null;
 
-/**
- * Fluxo de detalhes, cadastro, edição e exclusão de empresas. Compartilhado
- * entre /empresas e a Visão geral para que ambos mostrem os mesmos detalhes.
- */
 export function useCompanyDialogs() {
-    const { companies, users, createCompany, updateCompany, deleteCompany } = useDemoData();
+    const { companies, users, createCompany, updateCompany, deleteCompany } =
+        useDemoData();
     const { showToast } = useToast();
     const [dialog, setDialog] = useState<DialogState>(null);
     const triggerRef = useRef<HTMLElement | null>(null);
@@ -35,34 +32,55 @@ export function useCompanyDialogs() {
         restoreFocus(triggerRef.current);
     };
 
-    const openDetails = (companyId: string) => open({ kind: "details", companyId });
+    const openDetails = (companyId: string) =>
+        open({ kind: "details", companyId });
     const openCreate = () => open({ kind: "create" });
 
-    // Sempre lê o registro atual do estado compartilhado, nunca uma cópia.
-    const company = dialog && "companyId" in dialog ? companies.find((item) => item.id === dialog.companyId) : undefined;
-    const linkedUsers = company ? users.filter((user) => user.companyId === company.id).length : 0;
+    const company =
+        dialog && "companyId" in dialog
+            ? companies.find((item) => item.id === dialog.companyId)
+            : undefined;
+    const linkedUsers = company
+        ? users.filter((user) => user.companyId === company.id).length
+        : 0;
 
-    const handleCreate = (input: CompanyInput) => {
-        const created = createCompany(input);
-        showToast(`Empresa “${created.name}” cadastrada nesta demonstração. Os dados valem só nesta sessão.`);
-        close();
+    const handleCreate = async (input: CompanyInput) => {
+        try {
+            const created = await createCompany(input);
+            showToast(`Empresa “${created.name}” cadastrada com sucesso.`);
+            close();
+        } catch {
+            showToast("Não foi possível cadastrar a empresa. Tente novamente.");
+        }
     };
 
-    const handleUpdate = (companyId: string, input: CompanyInput) => {
-        updateCompany(companyId, input);
-        showToast(`Dados de “${input.name}” atualizados nesta demonstração.`);
-        close();
+    const handleUpdate = async (companyId: string, input: CompanyInput) => {
+        try {
+            await updateCompany(companyId, input);
+            showToast(`Dados de “${input.name}” atualizados com sucesso.`);
+            close();
+        } catch {
+            showToast("Não foi possível atualizar a empresa. Tente novamente.");
+        }
     };
 
-    const handleDelete = (companyId: string, name: string) => {
-        deleteCompany(companyId);
-        showToast(`Empresa “${name}” removida desta demonstração, com seus usuários vinculados.`);
-        close();
+    const handleDelete = async (companyId: string, name: string) => {
+        try {
+            await deleteCompany(companyId);
+            showToast(
+                `Empresa “${name}” removida, com seus usuários vinculados.`,
+            );
+            close();
+        } catch {
+            showToast("Não foi possível excluir a empresa. Tente novamente.");
+        }
     };
 
     let dialogs = null;
     if (dialog?.kind === "create") {
-        dialogs = <CompanyFormDialog onCancel={close} onSubmit={handleCreate} />;
+        dialogs = (
+            <CompanyFormDialog onCancel={close} onSubmit={handleCreate} />
+        );
     } else if (dialog && company) {
         if (dialog.kind === "details") {
             dialogs = (
@@ -70,8 +88,15 @@ export function useCompanyDialogs() {
                     company={company}
                     userCount={linkedUsers}
                     onClose={close}
-                    onEdit={() => setDialog({ kind: "edit", companyId: company.id })}
-                    onDelete={() => setDialog({ kind: "confirmDelete", companyId: company.id })}
+                    onEdit={() =>
+                        setDialog({ kind: "edit", companyId: company.id })
+                    }
+                    onDelete={() =>
+                        setDialog({
+                            kind: "confirmDelete",
+                            companyId: company.id,
+                        })
+                    }
                 />
             );
         } else if (dialog.kind === "edit") {
@@ -92,9 +117,8 @@ export function useCompanyDialogs() {
                     onConfirm={() => handleDelete(company.id, company.name)}
                 >
                     {linkedUsers > 0
-                        ? `${pluralize(linkedUsers, "usuário de demonstração vinculado", "usuários de demonstração vinculados")} a esta empresa também ${linkedUsers === 1 ? "será removido" : "serão removidos"}.`
-                        : "Esta empresa não tem usuários de demonstração vinculados."}{" "}
-                    A exclusão afeta apenas esta sessão e é desfeita ao recarregar a página.
+                        ? `${pluralize(linkedUsers, "usuário vinculado", "usuários vinculados")} a esta empresa também ${linkedUsers === 1 ? "será removido" : "serão removidos"}.`
+                        : "Esta empresa não tem usuários vinculados."}
                 </ConfirmDialog>
             );
         }

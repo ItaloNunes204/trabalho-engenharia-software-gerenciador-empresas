@@ -15,7 +15,8 @@ type DialogState =
     | null;
 
 export function useUserDialogs() {
-    const { companies, users, createUser, updateUser, deleteUser } = useDemoData();
+    const { companies, users, createUser, updateUser, deleteUser } =
+        useDemoData();
     const { showToast } = useToast();
     const [dialog, setDialog] = useState<DialogState>(null);
     const triggerRef = useRef<HTMLElement | null>(null);
@@ -33,31 +34,54 @@ export function useUserDialogs() {
     const openDetails = (userId: string) => open({ kind: "details", userId });
     const openCreate = () => open({ kind: "create" });
 
-    // Sempre lê o registro atual do estado compartilhado, nunca uma cópia.
-    const user = dialog && "userId" in dialog ? users.find((item) => item.id === dialog.userId) : undefined;
-    const companyName = user ? (companies.find((company) => company.id === user.companyId)?.name ?? "—") : "";
+    const user =
+        dialog && "userId" in dialog
+            ? users.find((item) => item.id === dialog.userId)
+            : undefined;
+    const companyName = user
+        ? (companies.find((company) => company.id === user.companyId)?.name ??
+          "—")
+        : "";
 
-    const handleCreate = (input: UserInput) => {
-        const created = createUser(input);
-        showToast(`Usuário “${created.name}” cadastrado nesta demonstração. Nenhuma conta real foi criada.`);
-        close();
+    const handleCreate = async (input: UserInput) => {
+        try {
+            const created = await createUser(input);
+            showToast(`Usuário “${created.name}” cadastrado com sucesso.`);
+            close();
+        } catch {
+            showToast("Não foi possível cadastrar o usuário. Tente novamente.");
+        }
     };
 
-    const handleUpdate = (userId: string, input: UserInput) => {
-        updateUser(userId, input);
-        showToast(`Dados de “${input.name}” atualizados nesta demonstração.`);
-        close();
+    const handleUpdate = async (userId: string, input: UserInput) => {
+        try {
+            await updateUser(userId, input);
+            showToast(`Dados de “${input.name}” atualizados com sucesso.`);
+            close();
+        } catch {
+            showToast("Não foi possível atualizar o usuário. Tente novamente.");
+        }
     };
 
-    const handleDelete = (userId: string, name: string) => {
-        deleteUser(userId);
-        showToast(`Usuário “${name}” removido desta demonstração.`);
-        close();
+    const handleDelete = async (userId: string, name: string) => {
+        try {
+            await deleteUser(userId);
+            showToast(`Usuário “${name}” removido com sucesso.`);
+            close();
+        } catch {
+            showToast("Não foi possível excluir o usuário. Tente novamente.");
+        }
     };
 
     let dialogs = null;
     if (dialog?.kind === "create") {
-        dialogs = <UserFormDialog companies={companies} onCancel={close} onSubmit={handleCreate} />;
+        dialogs = (
+            <UserFormDialog
+                companies={companies}
+                onCancel={close}
+                onSubmit={handleCreate}
+            />
+        );
     } else if (dialog && user) {
         if (dialog.kind === "details") {
             dialogs = (
@@ -66,7 +90,9 @@ export function useUserDialogs() {
                     companyName={companyName}
                     onClose={close}
                     onEdit={() => setDialog({ kind: "edit", userId: user.id })}
-                    onDelete={() => setDialog({ kind: "confirmDelete", userId: user.id })}
+                    onDelete={() =>
+                        setDialog({ kind: "confirmDelete", userId: user.id })
+                    }
                 />
             );
         } else if (dialog.kind === "edit") {
@@ -87,8 +113,7 @@ export function useUserDialogs() {
                     onCancel={close}
                     onConfirm={() => handleDelete(user.id, user.name)}
                 >
-                    O usuário será removido apenas desta demonstração; nenhuma conta real é excluída. A alteração é
-                    desfeita ao recarregar a página.
+                    O usuário será removido permanentemente.
                 </ConfirmDialog>
             );
         }

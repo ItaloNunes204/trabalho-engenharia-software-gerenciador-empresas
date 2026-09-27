@@ -1,64 +1,123 @@
-import { useCallback, useMemo, useReducer, useRef, type ReactNode } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useReducer,
+    useState,
+    type ReactNode,
+} from "react";
 import { DemoDataContext, type DemoDataValue } from "./demoDataContext";
 import { demoDataReducer } from "./demoDataReducer";
-import { INITIAL_COMPANIES, INITIAL_PERMISSIONS, INITIAL_USERS } from "./fixtures";
 import type { CompanyInput, PermissionId, RoleId, UserInput } from "./types";
-import { todayIsoDate } from "../utils/format";
+import {
+    createCompanyApi,
+    createUserApi,
+    deleteCompanyApi,
+    deleteUserApi,
+    fetchCompanies,
+    fetchPermissions,
+    fetchUsers,
+    togglePermissionApi,
+    updateCompanyApi,
+    updateUserApi,
+} from "../services/api";
 
 interface DemoDataProviderProps {
     children: ReactNode;
 }
 
-/**
- * Estado compartilhado da demonstração. Vive apenas na memória do navegador:
- * sobrevive à navegação entre rotas e volta aos dados iniciais ao recarregar.
- */
 export function DemoDataProvider({ children }: DemoDataProviderProps) {
     const [state, dispatch] = useReducer(demoDataReducer, {
-        companies: INITIAL_COMPANIES,
-        users: INITIAL_USERS,
-        permissions: INITIAL_PERMISSIONS,
+        companies: [],
+        users: [],
+        permissions: {} as DemoDataValue["permissions"],
     });
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadError, setLoadError] = useState<string | null>(null);
 
-    // Contadores monotônicos: um id nunca é reutilizado, mesmo após exclusões.
-    const nextCompanyId = useRef(INITIAL_COMPANIES.length + 1);
-    const nextUserId = useRef(INITIAL_USERS.length + 1);
+    useEffect(() => {
+        let cancelled = false;
 
-    const createCompany = useCallback((input: CompanyInput) => {
-        const company = { ...input, id: `c${nextCompanyId.current++}`, createdAt: todayIsoDate() };
+        async function load() {
+            try {
+                const [companies, users, permissions] = await Promise.all([
+                    fetchCompanies(),
+                    fetchUsers(),
+                    fetchPermissions(),
+                ]);
+                if (cancelled) return;
+                dispatch({
+                    type: "data/loaded",
+                    companies,
+                    users,
+                    permissions,
+                });
+                setLoadError(null);
+            } catch {
+                if (!cancelled) {
+                    setLoadError(
+                        "Não foi possível carregar os dados do backend. Verifique se ele está rodando.",
+                    );
+                }
+            } finally {
+                if (!cancelled) setIsLoading(false);
+            }
+        }
+
+        load();
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    const createCompany = useCallback(async (input: CompanyInput) => {
+        const company = await createCompanyApi(input);
         dispatch({ type: "company/create", company });
         return company;
     }, []);
 
-    const updateCompany = useCallback((id: string, input: CompanyInput) => {
-        dispatch({ type: "company/update", id, input });
-    }, []);
+    const updateCompany = useCallback(
+        async (id: string, input: CompanyInput) => {
+            await updateCompanyApi(id, input);
+            dispatch({ type: "company/update", id, input });
+        },
+        [],
+    );
 
-    const deleteCompany = useCallback((id: string) => {
+    const deleteCompany = useCallback(async (id: string) => {
+        await deleteCompanyApi(id);
         dispatch({ type: "company/delete", id });
     }, []);
 
-    const createUser = useCallback((input: UserInput) => {
-        const user = { ...input, id: `u${nextUserId.current++}`, lastAccess: null };
+    const createUser = useCallback(async (input: UserInput) => {
+        const user = await createUserApi(input);
         dispatch({ type: "user/create", user });
         return user;
     }, []);
 
-    const updateUser = useCallback((id: string, input: UserInput) => {
+    const updateUser = useCallback(async (id: string, input: UserInput) => {
+        await updateUserApi(id, input);
         dispatch({ type: "user/update", id, input });
     }, []);
 
-    const deleteUser = useCallback((id: string) => {
+    const deleteUser = useCallback(async (id: string) => {
+        await deleteUserApi(id);
         dispatch({ type: "user/delete", id });
     }, []);
 
-    const togglePermission = useCallback((permissionId: PermissionId, roleId: RoleId) => {
-        dispatch({ type: "permission/toggle", permissionId, roleId });
-    }, []);
+    const togglePermission = useCallback(
+        async (permissionId: PermissionId, roleId: RoleId) => {
+            await togglePermissionApi(permissionId, roleId);
+            dispatch({ type: "permission/toggle", permissionId, roleId });
+        },
+        [],
+    );
 
     const value = useMemo<DemoDataValue>(
         () => ({
             ...state,
+            isLoading,
+            loadError,
             createCompany,
             updateCompany,
             deleteCompany,
@@ -67,8 +126,35 @@ export function DemoDataProvider({ children }: DemoDataProviderProps) {
             deleteUser,
             togglePermission,
         }),
-        [state, createCompany, updateCompany, deleteCompany, createUser, updateUser, deleteUser, togglePermission],
+        [
+            state,
+            isLoading,
+            loadError,
+            createCompany,
+            updateCompany,
+            deleteCompany,
+            createUser,
+            updateUser,
+            deleteUser,
+            togglePermission,
+        ],
     );
 
-    return <DemoDataContext.Provider value={value}>{children}</DemoDataContext.Provider>;
+    return (
+        <DemoDataContext.Provider value={value}>
+            {loadError && (
+                <div
+                    role="alert"
+                    style={{
+                        padding: "12px",
+                        background: "#fee2e2",
+                        color: "#991b1b",
+                    }}
+                >
+                    {loadError}
+                </div>
+            )}
+            {children}
+        </DemoDataContext.Provider>
+    );
 }

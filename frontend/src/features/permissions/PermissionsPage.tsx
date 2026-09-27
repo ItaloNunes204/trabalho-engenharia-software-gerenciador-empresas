@@ -9,14 +9,26 @@ export function PermissionsPage() {
     const { permissions, togglePermission } = useDemoData();
     const { showToast } = useToast();
 
-    const enabledCount = (roleId: RoleId) => PERMISSIONS.filter(({ id }) => permissions[id][roleId]).length;
+    const enabledCount = (roleId: RoleId) =>
+        PERMISSIONS.filter(({ id }) => permissions[id][roleId]).length;
 
-    const handleToggle = (permissionId: PermissionId, permissionLabel: string, roleId: RoleId, roleName: string) => {
+    const handleToggle = async (
+        permissionId: PermissionId,
+        permissionLabel: string,
+        roleId: RoleId,
+        roleName: string,
+    ) => {
         const willEnable = !permissions[permissionId][roleId];
-        togglePermission(permissionId, roleId);
-        showToast(
-            `${roleName}: “${permissionLabel}” ${willEnable ? "ativada" : "desativada"} nesta demonstração (sem efeito real de acesso).`,
-        );
+        try {
+            await togglePermission(permissionId, roleId);
+            showToast(
+                `${roleName}: “${permissionLabel}” ${willEnable ? "ativada" : "desativada"} nesta demonstração (sem efeito real de acesso).`,
+            );
+        } catch {
+            showToast(
+                "Não foi possível atualizar a permissão. Tente novamente.",
+            );
+        }
     };
 
     return (
@@ -29,9 +41,9 @@ export function PermissionsPage() {
             <div className="notice notice--info" role="note">
                 <Icon name="info" />
                 <p>
-                    As alterações nesta matriz servem apenas para explorar a interface: não são aplicadas a nenhum
-                    usuário, não bloqueiam telas nem ações e não são salvas permanentemente. Ao recarregar a página, a
-                    configuração padrão é restaurada.
+                    As alterações nesta matriz servem apenas para explorar a
+                    interface: não são aplicadas a nenhum usuário real nem
+                    bloqueiam telas ou ações.
                 </p>
             </div>
 
@@ -41,9 +53,12 @@ export function PermissionsPage() {
                     return (
                         <li key={role.id} className="card role-card">
                             <h2 className="card__title">{role.name}</h2>
-                            <p className="role-card__description">{role.defaultDescription}</p>
+                            <p className="role-card__description">
+                                {role.defaultDescription}
+                            </p>
                             <p className="role-card__count">
-                                {count} de {PERMISSIONS.length} funcionalidades ativas nesta sessão
+                                {count} de {PERMISSIONS.length} funcionalidades
+                                ativas nesta sessão
                             </p>
                         </li>
                     );
@@ -56,7 +71,10 @@ export function PermissionsPage() {
                         <h2 id="matrix-title" className="card__title">
                             Matriz de permissões
                         </h2>
-                        <p className="card__subtitle">Selecione uma célula para ativar ou desativar a funcionalidade.</p>
+                        <p className="card__subtitle">
+                            Selecione uma célula para ativar ou desativar a
+                            funcionalidade.
+                        </p>
                     </div>
                 </header>
                 <div className="table-scroll">
@@ -65,7 +83,11 @@ export function PermissionsPage() {
                             <tr>
                                 <th scope="col">Funcionalidade</th>
                                 {ROLES.map((role) => (
-                                    <th key={role.id} scope="col" className="matrix__role">
+                                    <th
+                                        key={role.id}
+                                        scope="col"
+                                        className="matrix__role"
+                                    >
                                         {role.name}
                                     </th>
                                 ))}
@@ -78,20 +100,40 @@ export function PermissionsPage() {
                                         {permission.label}
                                     </th>
                                     {ROLES.map((role) => {
-                                        const enabled = permissions[permission.id][role.id];
+                                        const enabled =
+                                            permissions[permission.id][role.id];
                                         return (
-                                            <td key={role.id} className="matrix__cell">
+                                            <td
+                                                key={role.id}
+                                                className="matrix__cell"
+                                            >
                                                 <button
                                                     type="button"
                                                     className={`toggle${enabled ? " toggle--on" : ""}`}
                                                     aria-pressed={enabled}
                                                     aria-label={`${enabled ? "Desativar" : "Ativar"} ${permission.label} para ${role.name}`}
                                                     onClick={() =>
-                                                        handleToggle(permission.id, permission.label, role.id, role.name)
+                                                        handleToggle(
+                                                            permission.id,
+                                                            permission.label,
+                                                            role.id,
+                                                            role.name,
+                                                        )
                                                     }
                                                 >
-                                                    <Icon name={enabled ? "check" : "minus"} size={16} />
-                                                    <span aria-hidden="true">{enabled ? "Permitido" : "Sem acesso"}</span>
+                                                    <Icon
+                                                        name={
+                                                            enabled
+                                                                ? "check"
+                                                                : "minus"
+                                                        }
+                                                        size={16}
+                                                    />
+                                                    <span aria-hidden="true">
+                                                        {enabled
+                                                            ? "Permitido"
+                                                            : "Sem acesso"}
+                                                    </span>
                                                 </button>
                                             </td>
                                         );
