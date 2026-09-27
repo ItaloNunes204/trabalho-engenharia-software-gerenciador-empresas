@@ -6,7 +6,11 @@ from app.models.permission import Permission
 from app.schemas.permission_schema import permission_toggle_schema
 from app.utils.errors import error_response, validation_error_response
 
+from app.utils.auth import require_auth
+
+
 permissions_bp = Blueprint("permissions", __name__)
+permissions_bp.before_request(require_auth)
 
 
 @permissions_bp.route("", methods=["GET"])

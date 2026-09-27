@@ -3,7 +3,11 @@ from flask import Blueprint, jsonify
 from app.models.company import Company
 from app.models.user import User
 
+from app.utils.auth import require_auth
+
+
 overview_bp = Blueprint("overview", __name__)
+overview_bp.before_request(require_auth)
 
 SAMPLE_ACTIVITY = [
     {

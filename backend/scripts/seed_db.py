@@ -161,6 +161,8 @@ def seed():
             ),
         ]
         db.session.add_all(users)
+        for user in users:
+            user.set_password("demo1234")
 
         for role, functionality, enabled in PERMISSIONS_SEED:
             db.session.add(

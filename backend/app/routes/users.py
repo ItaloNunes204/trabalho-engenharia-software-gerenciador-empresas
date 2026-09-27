@@ -6,8 +6,10 @@ from app.models.user import User
 from app.models.company import Company
 from app.schemas.user_schema import user_schema
 from app.utils.errors import error_response, validation_error_response, paginate
+from app.utils.auth import require_auth
 
 users_bp = Blueprint("users", __name__)
+users_bp.before_request(require_auth)
 
 
 @users_bp.route("", methods=["GET"])
