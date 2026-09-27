@@ -9,6 +9,7 @@ import {
 import { DemoDataContext, type DemoDataValue } from "./demoDataContext";
 import { demoDataReducer } from "./demoDataReducer";
 import type { CompanyInput, PermissionId, RoleId, UserInput } from "./types";
+import { useAuth } from "../auth/useAuth";
 import {
     createCompanyApi,
     createUserApi,
@@ -27,6 +28,7 @@ interface DemoDataProviderProps {
 }
 
 export function DemoDataProvider({ children }: DemoDataProviderProps) {
+    const { isAuthenticated } = useAuth();
     const [state, dispatch] = useReducer(demoDataReducer, {
         companies: [],
         users: [],
@@ -36,7 +38,20 @@ export function DemoDataProvider({ children }: DemoDataProviderProps) {
     const [loadError, setLoadError] = useState<string | null>(null);
 
     useEffect(() => {
+        if (!isAuthenticated) {
+            dispatch({
+                type: "data/loaded",
+                companies: [],
+                users: [],
+                permissions: {} as DemoDataValue["permissions"],
+            });
+            setIsLoading(false);
+            setLoadError(null);
+            return;
+        }
+
         let cancelled = false;
+        setIsLoading(true);
 
         async function load() {
             try {
@@ -68,7 +83,7 @@ export function DemoDataProvider({ children }: DemoDataProviderProps) {
         return () => {
             cancelled = true;
         };
-    }, []);
+    }, [isAuthenticated]);
 
     const createCompany = useCallback(async (input: CompanyInput) => {
         const company = await createCompanyApi(input);

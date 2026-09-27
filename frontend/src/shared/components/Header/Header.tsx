@@ -9,7 +9,13 @@ interface HeaderProps {
     ref?: Ref<HTMLButtonElement>;
 }
 
-export function Header({ sectionLabel, menuOpen, menuId, onToggleMenu, ref }: HeaderProps) {
+export function Header({
+    sectionLabel,
+    menuOpen,
+    menuId,
+    onToggleMenu,
+    ref,
+}: HeaderProps) {
     return (
         <header className="topbar">
             <button
@@ -30,11 +36,6 @@ export function Header({ sectionLabel, menuOpen, menuId, onToggleMenu, ref }: He
                     <li aria-current="page">{sectionLabel}</li>
                 </ol>
             </nav>
-
-            <span className="demo-pill">
-                <span className="demo-pill__dot" aria-hidden="true" />
-                Demonstração
-            </span>
         </header>
     );
 }

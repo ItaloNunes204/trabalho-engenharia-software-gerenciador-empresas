@@ -22,7 +22,7 @@ export function PermissionsPage() {
         try {
             await togglePermission(permissionId, roleId);
             showToast(
-                `${roleName}: “${permissionLabel}” ${willEnable ? "ativada" : "desativada"} nesta demonstração (sem efeito real de acesso).`,
+                `${roleName}: “${permissionLabel}” ${willEnable ? "ativada" : "desativada"}.`,
             );
         } catch {
             showToast(
@@ -35,17 +35,8 @@ export function PermissionsPage() {
         <>
             <PageHeader
                 title="Permissões"
-                description="Explore quais ações cada perfil de acesso teria. A matriz é apenas uma demonstração da interface."
+                description="Configure quais ações cada perfil de acesso pode realizar."
             />
-
-            <div className="notice notice--info" role="note">
-                <Icon name="info" />
-                <p>
-                    As alterações nesta matriz servem apenas para explorar a
-                    interface: não são aplicadas a nenhum usuário real nem
-                    bloqueiam telas ou ações.
-                </p>
-            </div>
 
             <ul className="roles" aria-label="Perfis de acesso">
                 {ROLES.map((role) => {
@@ -58,7 +49,7 @@ export function PermissionsPage() {
                             </p>
                             <p className="role-card__count">
                                 {count} de {PERMISSIONS.length} funcionalidades
-                                ativas nesta sessão
+                                ativas
                             </p>
                         </li>
                     );

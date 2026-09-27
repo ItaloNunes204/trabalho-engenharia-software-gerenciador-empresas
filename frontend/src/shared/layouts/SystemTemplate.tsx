@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+    type ReactNode,
+} from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { findNavItem } from "../../app/navigation";
 import { Header } from "../components/Header/Header";
@@ -8,22 +14,29 @@ const SIDEBAR_ID = "app-sidebar";
 const DESKTOP_QUERY = "(min-width: 960px)";
 const APP_NAME = "Acme Gestão";
 
-export function SystemTemplate() {
+interface SystemTemplateProps {
+    children?: ReactNode;
+}
+
+export function SystemTemplate({ children }: SystemTemplateProps) {
     const { pathname } = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
     const mainRef = useRef<HTMLElement>(null);
     const previousPath = useRef<string | null>(null);
-    const sectionLabel = findNavItem(pathname)?.label ?? "Página não encontrada";
+    const sectionLabel =
+        findNavItem(pathname)?.label ?? "Página não encontrada";
 
     const closeMenu = useCallback((returnFocus: boolean) => {
         setMenuOpen(false);
         if (returnFocus) menuButtonRef.current?.focus();
     }, []);
 
-    // Após trocar de rota, move o foco para o título da nova página (NAV-004).
     useEffect(() => {
-        if (previousPath.current !== null && previousPath.current !== pathname) {
+        if (
+            previousPath.current !== null &&
+            previousPath.current !== pathname
+        ) {
             const heading = mainRef.current?.querySelector<HTMLElement>("h1");
             (heading ?? mainRef.current)?.focus();
         }
@@ -34,7 +47,9 @@ export function SystemTemplate() {
     useEffect(() => {
         if (!menuOpen) return;
 
-        document.querySelector<HTMLElement>(`#${SIDEBAR_ID} .sidebar__link`)?.focus();
+        document
+            .querySelector<HTMLElement>(`#${SIDEBAR_ID} .sidebar__link`)
+            ?.focus();
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") closeMenu(true);
@@ -54,9 +69,19 @@ export function SystemTemplate() {
 
     return (
         <div className="shell">
-            <Sidebar id={SIDEBAR_ID} open={menuOpen} onNavigate={() => closeMenu(false)} />
+            <Sidebar
+                id={SIDEBAR_ID}
+                open={menuOpen}
+                onNavigate={() => closeMenu(false)}
+            />
 
-            {menuOpen && <div className="shell__overlay" aria-hidden="true" onClick={() => closeMenu(true)} />}
+            {menuOpen && (
+                <div
+                    className="shell__overlay"
+                    aria-hidden="true"
+                    onClick={() => closeMenu(true)}
+                />
+            )}
 
             <div className="shell__content" inert={menuOpen}>
                 <Header
@@ -64,10 +89,12 @@ export function SystemTemplate() {
                     sectionLabel={sectionLabel}
                     menuOpen={menuOpen}
                     menuId={SIDEBAR_ID}
-                    onToggleMenu={() => (menuOpen ? closeMenu(true) : setMenuOpen(true))}
+                    onToggleMenu={() =>
+                        menuOpen ? closeMenu(true) : setMenuOpen(true)
+                    }
                 />
                 <main ref={mainRef} className="shell__main" tabIndex={-1}>
-                    <Outlet />
+                    {children ?? <Outlet />}
                 </main>
             </div>
         </div>
