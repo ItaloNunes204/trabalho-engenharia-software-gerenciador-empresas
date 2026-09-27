@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from marshmallow import ValidationError
+import secrets
 
 from app.extensions import db
 from app.models.user import User
@@ -74,16 +75,12 @@ def create_user():
         status=data["status"],
         last_access=None,
     )
+    user.set_password(secrets.token_urlsafe(12))
     db.session.add(user)
     db.session.commit()
 
     return (
-        jsonify(
-            {
-                "message": "Usuário criado com sucesso (demonstração)",
-                "user": user.to_dict(),
-            }
-        ),
+        jsonify({"message": "Usuário criado com sucesso", "user": user.to_dict()}),
         201,
     )
 

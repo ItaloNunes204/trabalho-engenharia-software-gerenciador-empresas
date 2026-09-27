@@ -21,6 +21,9 @@ def decode_token(token):
 
 
 def require_auth():
+    if request.method == "OPTIONS":
+        return None
+
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         return {"error": "Token de autenticação ausente"}, 401
