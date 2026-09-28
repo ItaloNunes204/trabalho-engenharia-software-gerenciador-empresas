@@ -125,6 +125,12 @@ select {
     outline: none;
 }
 
+.shell__loading {
+    margin: 48px 0;
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
 .shell__overlay {
     display: none;
 }
