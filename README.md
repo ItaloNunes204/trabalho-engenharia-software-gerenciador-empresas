@@ -18,6 +18,7 @@ O sistema tem como objetivo permitir o gerenciamento de empresas, oferecendo fun
 | Evandro Araujo Furlaneto Delgado | 000000    | TN    | Full Stack |
 | Italo Nunes Pereira Vieira       | 000000    | TN    | Full Stack |
 | Leticia Vitoria Martins do Carmo | 000000    | TN    | Full Stack |
+| Joao Gabriel Sampaio de Barros   | 000000    | TN    | Full Stack |
 
 ## 3. Tecnologias Usadas
 
