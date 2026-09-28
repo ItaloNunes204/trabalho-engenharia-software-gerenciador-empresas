@@ -1,0 +1,8 @@
+1. *Cadastrar empresa.* Como administrador, eu gostaria de cadastrar uma nova empresa informando razão social, CNPJ, endereço e contato, para que ela passe a fazer parte da base do sistema.
+2. *Editar e excluir empresa.* Como administrador, eu gostaria de atualizar os dados de uma empresa cadastrada ou removê-la da base, para manter as informações corretas e atualizadas.
+3. *Consultar empresas.* Como usuário do sistema, eu gostaria de listar as empresas, pesquisar por nome ou CNPJ e abrir a ficha completa de cada uma, para localizar rapidamente a que preciso.
+4. *Autenticar-se no sistema.* Como usuário cadastrado, eu gostaria de fazer login e logout com e-mail e senha, para acessar o painel de forma segura.
+5. *Gerenciar usuários e permissões.* Como administrador, eu gostaria de cadastrar usuários e definir o perfil de cada um como administrador ou usuário comum, para controlar quem pode alterar a base.
+6. *Acompanhar indicadores no painel.* Como administrador, eu gostaria de ver na tela inicial o total de empresas cadastradas, a divisão entre ativas e inativas, a distribuição por UF e as últimas empresas incluídas, para ter uma visão geral da base sem precisar navegar pelas listagens.
+7. *Exportar a listagem para CSV.* Como usuário do sistema, eu gostaria de exportar em CSV exatamente as empresas que estão visíveis após os filtros aplicados, para trabalhar com esses dados em uma planilha.
+8. *Validar o CNPJ no cadastro.* Como administrador, eu gostaria que o sistema conferisse os dígitos verificadores do CNPJ informado e recusasse números já cadastrados, indicando qual empresa ocupa aquele CNPJ, para evitar registros inválidos ou duplicados.
