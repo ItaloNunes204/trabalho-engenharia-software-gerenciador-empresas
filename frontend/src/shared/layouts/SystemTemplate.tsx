@@ -9,6 +9,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { findNavItem } from "../../app/navigation";
 import { Header } from "../components/Header/Header";
 import { Sidebar } from "../components/Sidebar/Sidebar";
+import { useDemoData } from "../demo/useDemoData";
 
 const SIDEBAR_ID = "app-sidebar";
 const DESKTOP_QUERY = "(min-width: 960px)";
@@ -20,6 +21,7 @@ interface SystemTemplateProps {
 
 export function SystemTemplate({ children }: SystemTemplateProps) {
     const { pathname } = useLocation();
+    const { isLoading } = useDemoData();
     const [menuOpen, setMenuOpen] = useState(false);
     const menuButtonRef = useRef<HTMLButtonElement>(null);
     const mainRef = useRef<HTMLElement>(null);
@@ -94,7 +96,15 @@ export function SystemTemplate({ children }: SystemTemplateProps) {
                     }
                 />
                 <main ref={mainRef} className="shell__main" tabIndex={-1}>
-                    {children ?? <Outlet />}
+                    {isLoading ? (
+                        // Ao abrir a página direto (ou com F5), os dados ainda
+                        // estão vindo da API: não desenhar as telas vazias.
+                        <p role="status" className="shell__loading">
+                            Carregando dados…
+                        </p>
+                    ) : (
+                        (children ?? <Outlet />)
+                    )}
                 </main>
             </div>
         </div>

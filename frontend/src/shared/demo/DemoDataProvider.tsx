@@ -8,7 +8,14 @@ import {
 } from "react";
 import { DemoDataContext, type DemoDataValue } from "./demoDataContext";
 import { demoDataReducer } from "./demoDataReducer";
-import type { CompanyInput, PermissionId, RoleId, UserInput } from "./types";
+import { PERMISSIONS } from "./labels";
+import type {
+    CompanyInput,
+    PermissionId,
+    PermissionMatrix,
+    RoleId,
+    UserInput,
+} from "./types";
 import { useAuth } from "../auth/useAuth";
 import {
     createCompanyApi,
@@ -23,19 +30,32 @@ import {
     updateUserApi,
 } from "../services/api";
 
+/** Matriz com todas as permissões desligadas, usada antes de os dados chegarem. */
+function createEmptyPermissions(): PermissionMatrix {
+    return Object.fromEntries(
+        PERMISSIONS.map(({ id }) => [
+            id,
+            { admin: false, editor: false, viewer: false },
+        ]),
+    ) as PermissionMatrix;
+}
+
 interface DemoDataProviderProps {
     children: ReactNode;
 }
 
 export function DemoDataProvider({ children }: DemoDataProviderProps) {
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, token } = useAuth();
     const [state, dispatch] = useReducer(demoDataReducer, {
         companies: [],
         users: [],
-        permissions: {} as DemoDataValue["permissions"],
+        permissions: createEmptyPermissions(),
     });
-    const [isLoading, setIsLoading] = useState(true);
+    // Sessão (token) para a qual os dados já foram carregados. Enquanto não
+    // bater com a sessão atual, as telas ainda não têm dados para mostrar.
+    const [loadedFor, setLoadedFor] = useState<string | null>(null);
     const [loadError, setLoadError] = useState<string | null>(null);
+    const isLoading = isAuthenticated && loadedFor !== token;
 
     useEffect(() => {
         if (!isAuthenticated) {
@@ -43,15 +63,13 @@ export function DemoDataProvider({ children }: DemoDataProviderProps) {
                 type: "data/loaded",
                 companies: [],
                 users: [],
-                permissions: {} as DemoDataValue["permissions"],
+                permissions: createEmptyPermissions(),
             });
-            setIsLoading(false);
             setLoadError(null);
             return;
         }
 
         let cancelled = false;
-        setIsLoading(true);
 
         async function load() {
             try {
@@ -75,7 +93,7 @@ export function DemoDataProvider({ children }: DemoDataProviderProps) {
                     );
                 }
             } finally {
-                if (!cancelled) setIsLoading(false);
+                if (!cancelled) setLoadedFor(token);
             }
         }
 
@@ -83,7 +101,7 @@ export function DemoDataProvider({ children }: DemoDataProviderProps) {
         return () => {
             cancelled = true;
         };
-    }, [isAuthenticated]);
+    }, [isAuthenticated, token]);
 
     const createCompany = useCallback(async (input: CompanyInput) => {
         const company = await createCompanyApi(input);
